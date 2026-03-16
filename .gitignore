@@ -19,6 +19,9 @@ firstrun.log
 .DS_Store
 Thumbs.db
 
-### IDE ###
+### IDE / Tools ###
 .vscode/settings.json
+*.code-workspace
+.claude/
 *.swp
+CLAUDE.md
