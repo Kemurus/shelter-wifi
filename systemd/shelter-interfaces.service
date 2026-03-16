@@ -1,0 +1,12 @@
+[Unit]
+Description=Shelter WiFi Interface Setup
+Before=hostapd.service wpa_supplicant@wlan1.service dnsmasq.service
+After=sys-subsystem-net-devices-wlan0.device
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/bash /opt/shelter-wifi/scripts/setup_interfaces.sh
+
+[Install]
+WantedBy=multi-user.target

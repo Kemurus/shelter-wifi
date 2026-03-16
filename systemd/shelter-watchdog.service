@@ -1,0 +1,13 @@
+[Unit]
+Description=Shelter WiFi AP Watchdog
+After=shelter-interfaces.service hostapd.service
+Requires=shelter-interfaces.service
+
+[Service]
+Type=simple
+ExecStart=/bin/bash /opt/shelter-wifi/scripts/hostapd_watchdog.sh
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shelter WiFi — Login</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0f1117; --card: #1a1d27; --border: #2a2d3e;
+      --accent: #4f8ef7; --text: #e2e8f0; --muted: #8892a4;
+      --red: #ef4444; --input: #12141c;
+    }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 16px;
+    }
+    .login-box {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 36px 32px;
+      width: 100%; max-width: 380px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+    }
+    .logo {
+      text-align: center; margin-bottom: 28px;
+    }
+    .logo i {
+      font-size: 2.8rem; color: var(--accent);
+      display: block; margin-bottom: 10px;
+    }
+    .logo h1 { font-size: 1.3rem; font-weight: 700; }
+    .logo p  { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
+
+    .form-group { margin-bottom: 16px; }
+    label {
+      display: block; font-size: 0.8rem; color: var(--muted);
+      margin-bottom: 7px; font-weight: 500;
+    }
+    .input-wrap { position: relative; }
+    .input-wrap i {
+      position: absolute; left: 13px; top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted); font-size: 0.9rem; pointer-events: none;
+    }
+    input {
+      width: 100%; background: var(--input);
+      border: 1px solid var(--border); border-radius: 9px;
+      color: var(--text); padding: 11px 14px 11px 38px;
+      font-size: 0.9rem; outline: none;
+      transition: border-color 0.18s;
+    }
+    input:focus { border-color: var(--accent); }
+    .show-pass {
+      position: absolute; right: 12px; top: 50%;
+      transform: translateY(-50%);
+      background: none; border: none; color: var(--muted);
+      cursor: pointer; padding: 4px; font-size: 0.85rem;
+    }
+    .show-pass:hover { color: var(--accent); }
+    input[name="password"] { padding-right: 38px; }
+
+    .error {
+      background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3);
+      color: var(--red); border-radius: 8px;
+      padding: 10px 14px; font-size: 0.83rem;
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 16px;
+    }
+    .btn {
+      width: 100%; padding: 12px;
+      background: var(--accent); color: white;
+      border: none; border-radius: 9px;
+      font-size: 0.95rem; font-weight: 600;
+      cursor: pointer; transition: background 0.18s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn:hover { background: #3a78e6; }
+    .btn:active { background: #2a68d6; }
+  </style>
+</head>
+<body>
+  <div class="login-box">
+    <div class="logo">
+      <i class="fa-solid fa-wifi"></i>
+      <h1>Shelter WiFi</h1>
+      <p>Management Console</p>
+    </div>
+
+    {% if error %}
+    <div class="error">
+      <i class="fa-solid fa-circle-xmark"></i> {{ error }}
+    </div>
+    {% endif %}
+
+    <form method="POST" action="/login">
+      <div class="form-group">
+        <label>Username</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-user"></i>
+          <input name="username" type="text" autocomplete="username"
+                 value="{{ username or '' }}" autofocus>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-lock"></i>
+          <input name="password" type="password" autocomplete="current-password">
+          <button type="button" class="show-pass" onclick="togglePass(this)">
+            <i class="fa-solid fa-eye"></i>
+          </button>
+        </div>
+      </div>
+      <button type="submit" class="btn">
+        <i class="fa-solid fa-right-to-bracket"></i> Sign In
+      </button>
+    </form>
+  </div>
+
+  <script>
+    function togglePass(btn) {
+      const inp = btn.previousElementSibling;
+      const show = inp.type === 'password';
+      inp.type = show ? 'text' : 'password';
+      btn.innerHTML = `<i class="fa-solid fa-eye${show ? '-slash' : ''}"></i>`;
+    }
+  </script>
+</body>
+</html>

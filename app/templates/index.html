@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Shelter WiFi</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/static/css/main.css">
+</head>
+<body>
+
+<!-- Header -->
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <i class="fa-solid fa-wifi"></i>
+      <span>Shelter WiFi</span>
+    </div>
+    <div class="header-meta">
+      <span id="h-temp"><i class="fa-solid fa-temperature-half"></i> —</span>
+      <span id="h-uptime"><i class="fa-solid fa-clock"></i> —</span>
+      <a href="/logout" style="color:var(--text-muted);text-decoration:none;font-size:.78rem" title="Sign out">
+        <i class="fa-solid fa-right-from-bracket"></i>
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- Tabs -->
+<nav class="tabs">
+  <button class="tab active" data-tab="status"><i class="fa-solid fa-chart-line"></i> Status</button>
+  <button class="tab" data-tab="networks"><i class="fa-solid fa-magnifying-glass"></i> Networks</button>
+  <button class="tab" data-tab="hotspot"><i class="fa-solid fa-tower-broadcast"></i> Hotspot</button>
+  <button class="tab" data-tab="clients"><i class="fa-solid fa-users"></i> Clients <span id="client-badge" class="badge hidden">0</span></button>
+</nav>
+
+<main>
+
+<!-- ─── TAB: STATUS ─────────────────────────────────────────────── -->
+<section id="tab-status" class="tab-content active">
+
+  <!-- Connection map -->
+  <div class="conn-map">
+
+    <!-- Clients → Hotspot -->
+    <div class="conn-row">
+      <div class="conn-device">
+        <div class="conn-icon"><i class="fa-solid fa-mobile-screen-button"></i></div>
+        <div class="conn-label">Shelter Clients</div>
+      </div>
+      <div class="conn-line-wrap">
+        <div class="conn-line active"></div>
+        <div class="conn-line-label">
+          <span id="cv-hs-label">—</span>
+          <span class="conn-tag open">Open</span>
+        </div>
+      </div>
+      <div class="conn-device conn-device-pi">
+        <div class="conn-icon accent"><i class="fa-brands fa-raspberry-pi"></i></div>
+        <div class="conn-label">Pi Zero 2W</div>
+      </div>
+    </div>
+
+    <!-- Pi ← Management WiFi -->
+    <div class="conn-row conn-row-sub">
+      <div class="conn-sub-label">Built-in WiFi (wlan0)</div>
+      <div class="conn-line-wrap">
+        <div class="conn-line" id="mgmt-line"></div>
+        <div class="conn-line-label">
+          <span id="mgmt-ssid">—</span>
+          <span id="mgmt-ip" class="conn-ip"></span>
+        </div>
+      </div>
+      <div class="conn-device">
+        <div class="conn-icon" id="mgmt-icon"><i class="fa-solid fa-house-signal"></i></div>
+        <div class="conn-label">Management</div>
+      </div>
+    </div>
+
+    <!-- Alfa → Internet -->
+    <div class="conn-row conn-row-sub">
+      <div class="conn-sub-label">Alfa (wlan1)</div>
+      <div class="conn-line-wrap">
+        <div class="conn-line" id="cv-wan-line"></div>
+        <div class="conn-line-label">
+          <span id="cv-wan-label">—</span>
+          <span id="up-ip" class="conn-ip"></span>
+        </div>
+      </div>
+      <div class="conn-device">
+        <div class="conn-icon" id="cv-internet-icon"><i class="fa-solid fa-earth-americas"></i></div>
+        <div class="conn-label">Internet</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Stats row -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <i class="fa-solid fa-users"></i>
+      <div class="stat-val" id="hs-clients">0</div>
+      <div class="stat-lbl">Clients</div>
+    </div>
+    <div class="stat-card">
+      <i class="fa-solid fa-signal"></i>
+      <div class="stat-val" id="up-signal-val">—</div>
+      <div class="stat-lbl">Alfa Signal</div>
+    </div>
+    <div class="stat-card">
+      <i class="fa-solid fa-tower-broadcast"></i>
+      <div class="stat-val" id="hs-ssid" style="font-size:.75rem">—</div>
+      <div class="stat-lbl">Hotspot</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body" style="display:flex;gap:16px;flex-wrap:wrap">
+      <button class="btn btn-outline btn-sm" onclick="doDisconnect()">
+        <i class="fa-solid fa-plug-circle-xmark"></i> Disconnect Alfa upstream
+      </button>
+    </div>
+  </div>
+
+</section>
+
+<!-- ─── TAB: NETWORKS ───────────────────────────────────────────── -->
+<section id="tab-networks" class="tab-content">
+
+  <div class="card">
+    <div class="card-header">
+      <i class="fa-solid fa-magnifying-glass"></i> WiFi Scan
+    </div>
+    <div class="card-body">
+      <button id="scan-btn" class="btn btn-primary" onclick="startScan()">
+        <i class="fa-solid fa-satellite-dish"></i> Scan
+      </button>
+      <p class="hint mt-12">Alfa (wlan1) will scan for available networks</p>
+    </div>
+  </div>
+
+  <div id="networks-list"></div>
+
+</section>
+
+<!-- ─── TAB: HOTSPOT ────────────────────────────────────────────── -->
+<section id="tab-hotspot" class="tab-content">
+
+  <div class="card">
+    <div class="card-header">
+      <i class="fa-solid fa-pen-to-square"></i> Hotspot Settings
+    </div>
+    <div class="card-body">
+      <div class="form-group">
+        <label>Network Name (SSID)</label>
+        <input id="hs-ssid-input" type="text" maxlength="32" placeholder="Shelter_Hotspot">
+      </div>
+      <div class="form-group">
+        <label>Channel</label>
+        <div class="channel-grid" id="channel-grid"></div>
+      </div>
+      <div class="form-group">
+        <label>Security</label>
+        <div class="radio-group">
+          <label class="radio-option">
+            <input type="radio" name="security" value="open" checked>
+            <span><i class="fa-solid fa-lock-open"></i> Open (no password)</span>
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="security" value="wpa2">
+            <span><i class="fa-solid fa-lock"></i> WPA2 (password)</span>
+          </label>
+        </div>
+      </div>
+      <div class="form-group" id="password-group" style="display:none">
+        <label>Password (min. 8 characters)</label>
+        <div class="input-with-icon">
+          <input id="hs-pass-input" type="password" placeholder="Enter password">
+          <button type="button" onclick="togglePass('hs-pass-input', this)"><i class="fa-solid fa-eye"></i></button>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="saveHotspot()">
+        <i class="fa-solid fa-floppy-disk"></i> Save
+      </button>
+    </div>
+  </div>
+
+</section>
+
+<!-- ─── TAB: CLIENTS ────────────────────────────────────────────── -->
+<section id="tab-clients" class="tab-content">
+  <div class="card">
+    <div class="card-header">
+      <i class="fa-solid fa-users"></i> Connected Devices
+      <button class="btn-icon" onclick="refreshClients()" title="Refresh">
+        <i class="fa-solid fa-rotate"></i>
+      </button>
+    </div>
+    <div class="card-body" id="clients-list">
+      <div class="empty-state">
+        <i class="fa-solid fa-user-slash"></i>
+        <p>No connected devices</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ─── CONNECT MODAL ──────────────────────────────────────────── -->
+<div id="modal-overlay" class="modal-overlay hidden" onclick="closeModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Connect Alfa</div>
+        <div class="modal-ssid" id="modal-ssid-label"></div>
+      </div>
+      <button class="btn-icon" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="modal-ssid-value">
+      <div id="modal-pass-group" class="form-group">
+        <label>Password</label>
+        <div class="input-with-icon">
+          <input id="modal-pass" type="password" placeholder="Enter WiFi password">
+          <button type="button" onclick="togglePass('modal-pass', this)"><i class="fa-solid fa-eye"></i></button>
+        </div>
+      </div>
+      <div id="connect-status" class="connect-status hidden"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" id="modal-connect-btn" onclick="submitConnect()">
+        <i class="fa-solid fa-plug"></i> Connect
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── TOAST ──────────────────────────────────────────────────── -->
+<div id="toast-container"></div>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>

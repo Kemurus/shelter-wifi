@@ -1,0 +1,25 @@
+[Unit]
+Description=Shelter WiFi Web Interface
+After=network.target hostapd.service dnsmasq.service wpa_supplicant@wlan1.service
+Requires=hostapd.service
+
+[Service]
+Type=simple
+User=shelter
+Group=shelter
+WorkingDirectory=/opt/shelter-wifi
+ExecStart=/opt/shelter-wifi/venv/bin/gunicorn \
+    --workers 1 \
+    --bind 0.0.0.0:8080 \
+    --timeout 60 \
+    --access-logfile /var/log/shelter-wifi/access.log \
+    --error-logfile /var/log/shelter-wifi/error.log \
+    wsgi:app
+Restart=on-failure
+RestartSec=5
+
+# Access wpa_supplicant control socket (group netdev)
+SupplementaryGroups=netdev
+
+[Install]
+WantedBy=multi-user.target

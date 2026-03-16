@@ -1,0 +1,24 @@
+### Secrets — never commit these ###
+config/config.env
+config/admin.conf
+config/wpa_supplicant_wlan1.conf
+
+### Python ###
+__pycache__/
+*.py[cod]
+*.pyo
+venv/
+.venv/
+*.egg-info/
+
+### Logs ###
+*.log
+firstrun.log
+
+### OS ###
+.DS_Store
+Thumbs.db
+
+### IDE ###
+.vscode/settings.json
+*.swp

@@ -1,0 +1,26 @@
+[Unit]
+Description=Shelter WiFi Routing Fix
+After=wpa_supplicant@wlan1.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+# Wait for wlan1 to get DHCP then set it as primary default route
+ExecStart=/bin/bash -c '\
+  for i in $(seq 1 30); do \
+    GW=$(ip route show dev wlan1 2>/dev/null | grep default | awk "{print \$3}"); \
+    if [ -n "$GW" ]; then \
+      ip route del default via $GW dev wlan1 2>/dev/null || true; \
+      ip route add default via $GW dev wlan1 metric 50; \
+      echo "wlan1 default route: $GW metric 50"; \
+      exit 0; \
+    fi; \
+    sleep 1; \
+  done; \
+  echo "wlan1 not connected after 30s"'
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

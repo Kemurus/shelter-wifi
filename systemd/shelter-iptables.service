@@ -1,0 +1,13 @@
+[Unit]
+Description=Shelter WiFi iptables Rules
+Before=hostapd.service dnsmasq.service network-online.target
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/sbin/iptables-restore /opt/shelter-wifi/config/iptables.rules
+ExecStart=/sbin/sysctl -w net.ipv4.ip_forward=1
+
+[Install]
+WantedBy=multi-user.target
